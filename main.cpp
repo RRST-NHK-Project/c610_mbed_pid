@@ -4,8 +4,10 @@
 CAN can{PA_11, PA_12, (int)1e6};
 C610Array c610{};
 
-// PID制御の比例ゲイン（P制御のみを使用）
-constexpr float kp = 3.50f; // 比例ゲイン
+// PID制御のゲイン
+constexpr float kp = 0.1f;  // 比例ゲイン
+constexpr float ki = 0;  // 積分ゲイン
+constexpr float kd = 0.0017;   // 微分ゲイン
 constexpr uint16_t rotation_angle = 180; // 回転させたい角度（単位: 度）
 constexpr uint16_t max_angle = 8192;     // 1周分の角度
 
@@ -15,6 +17,9 @@ int main() {
   const int motor_id = 1; // 制御するモーターのID（1～8）
   uint16_t target_angle = 0; // 初期目標角度
   bool target_set = false;   // 目標角度が設定されたかどうか
+
+  float integral_error = 0.0f; // 積分誤差
+  int16_t previous_error = 0;  // 前回の誤差
 
   while (1) {
     auto now = HighResClock::now();
@@ -45,8 +50,19 @@ int main() {
       if (error > max_angle / 2) error -= max_angle; // 最短経路に補正
       if (error < -max_angle / 2) error += max_angle;
 
-      // 電流値を計算（P制御）
-      int16_t output_current = static_cast<int16_t>(kp * error);
+      // 積分項の計算（積分誤差を更新）
+      integral_error += error * 0.01f; // 10msの周期を考慮（秒換算）
+      // 積分誤差の制限
+      if (integral_error > 1000) integral_error = 1000;
+      if (integral_error < -1000) integral_error = -1000;
+
+      // 微分項の計算
+      float derivative_error = (error - previous_error) / 0.01f; // 10msの周期を考慮（秒換算）
+      previous_error = error; // 誤差を更新
+
+      // 電流値を計算（PID制御）
+      int16_t output_current = static_cast<int16_t>(
+          kp * error + ki * integral_error + kd * derivative_error);
 
       // 電流値の制限（範囲: -10000～10000）
       if (output_current > 10000) output_current = 10000;
@@ -74,4 +90,3 @@ int main() {
     }
   }
 }
-//github
