@@ -5,9 +5,9 @@ CAN can{PA_11, PA_12, (int)1e6};
 C610Array c610{};
 
 // PID制御のゲイン
-constexpr float kp = 0.1f;  // 比例ゲイン
+constexpr float kp = 0.1;  // 比例ゲイン
 constexpr float ki = 0;  // 積分ゲイン
-constexpr float kd = 0.0017;   // 微分ゲイン
+constexpr float kd = 0.003;   // 微分ゲイン
 constexpr uint16_t rotation_angle = 180; // 回転させたい角度（単位: 度）
 constexpr uint16_t max_angle = 8192;     // 1周分の角度
 
@@ -50,14 +50,14 @@ int main() {
       if (error > max_angle / 2) error -= max_angle; // 最短経路に補正
       if (error < -max_angle / 2) error += max_angle;
 
-      // 積分項の計算（積分誤差を更新）
-      integral_error += error * 0.01f; // 10msの周期を考慮（秒換算）
+     // 積分項の計算（積分誤差を更新）
+      integral_error += error * 0.005f; // 10msの周期を考慮（秒換算）
       // 積分誤差の制限
       if (integral_error > 1000) integral_error = 1000;
       if (integral_error < -1000) integral_error = -1000;
 
       // 微分項の計算
-      float derivative_error = (error - previous_error) / 0.01f; // 10msの周期を考慮（秒換算）
+      float derivative_error = (error - previous_error) / 0.005f; // 10msの周期を考慮（秒換算）
       previous_error = error; // 誤差を更新
 
       // 電流値を計算（PID制御）
