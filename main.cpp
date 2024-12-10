@@ -32,7 +32,7 @@ int main() {
     }
 
     // 10msごとに制御
-    if (dt > 10ms) {
+    if (dt > 5ms) {
       pre = now;
 
       auto& motor = c610[motor_id - 1]; // 対応するモーターを取得
@@ -76,7 +76,7 @@ int main() {
              motor_id, target_angle, current_angle, output_current);
 
       // 目標角度に到達した場合、停止
-      if (abs(error) < 5) { // 許容誤差内
+      if (abs(error) < 22) { // 許容誤差内
         motor.set_raw_current(0); // モーター停止
         printf("Motor %d reached target angle.\n", motor_id);
         break; // ループを抜けるか、必要なら別の処理を追加
