@@ -5,14 +5,14 @@ CAN can{PA_11, PA_12, (int)1e6};
 C610Array c610{};
 
 // PID制御のゲイン
-constexpr float kp = 0.08;  // 比例ゲイン
+constexpr float kp = 2;  // 比例ゲイン
 constexpr float ki = 0;  // 積分ゲイン
-constexpr float kd = 0.001;   // 微分ゲイン
+constexpr float kd = 0.03;   // 微分ゲイン
 constexpr uint16_t rotation_angle = 180; // 回転させたい角度（単位: 度）
 constexpr uint16_t max_angle = 8192;     // 1周分の角度
 
 int main() {
-  printf("setup\n");
+ // printf("setup\n");
 
   const int motor_id = 1; // 制御するモーターのID（1～8）
   uint16_t target_angle = 0; // 初期目標角度
@@ -42,7 +42,7 @@ int main() {
       if (!target_set) {
         target_angle = (current_angle + rotation_angle * max_angle / 360) % max_angle;
         target_set = true;
-        printf("Target angle set to: %d (Current angle: %d)\n", target_angle, current_angle);
+       // printf("Target angle set to: %d (Current angle: %d)\n", target_angle, current_angle);
       }
 
       // 角度の誤差を計算（循環補正を考慮）
@@ -70,24 +70,24 @@ int main() {
 
       // モーターに電流を設定
       motor.set_raw_current(output_current);
-
+/*
       // デバッグ用出力
-      printf("Motor %d: Target Angle: %d, Current Angle: %d, Output Current: %d,Error: %d, Integral Error: %f, Derivative Error: %f\n",
-             motor_id, target_angle, current_angle, output_currenterror,error, integral_error, derivative_error);
-
-
+      printf("Current Angle: %d, Output Current: %d,Error: %d, Integral Error: %f, Derivative Error: %f\n",
+            current_angle, output_current,error, integral_error, derivative_error);
+*/
+ printf("%d\n",current_angle);
        
       // 目標角度に到達した場合、停止
       if (abs(error) < 22) { // 許容誤差内
         motor.set_raw_current(0); // モーター停止
-        printf("Motor %d reached target angle.\n", motor_id);
+       // printf("Motor %d reached target angle.\n", motor_id);
         break; // ループを抜けるか、必要なら別の処理を追加
       }
 
       // CANメッセージを送信
       auto msgs = c610.to_msgs();
       if (!can.write(msgs[0]) || !can.write(msgs[1])) {
-        printf("Failed to write c610 msg\n");
+       // printf("Failed to write c610 msg\n");
       }
     }
      
