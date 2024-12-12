@@ -5,9 +5,9 @@ CAN can{PA_11, PA_12, (int)1e6};
 C610Array c610{};
 
 // PID制御のゲイン
-constexpr float kp = 0.1;  // 比例ゲイン
+constexpr float kp = 0.08;  // 比例ゲイン
 constexpr float ki = 0;  // 積分ゲイン
-constexpr float kd = 0.003;   // 微分ゲイン
+constexpr float kd = 0.001;   // 微分ゲイン
 constexpr uint16_t rotation_angle = 180; // 回転させたい角度（単位: 度）
 constexpr uint16_t max_angle = 8192;     // 1周分の角度
 
@@ -72,9 +72,11 @@ int main() {
       motor.set_raw_current(output_current);
 
       // デバッグ用出力
-      printf("Motor %d: Target Angle: %d, Current Angle: %d, Output Current: %d\n",
-             motor_id, target_angle, current_angle, output_current);
+      printf("Motor %d: Target Angle: %d, Current Angle: %d, Output Current: %d,Error: %d, Integral Error: %f, Derivative Error: %f\n",
+             motor_id, target_angle, current_angle, output_currenterror,error, integral_error, derivative_error);
 
+
+       
       // 目標角度に到達した場合、停止
       if (abs(error) < 22) { // 許容誤差内
         motor.set_raw_current(0); // モーター停止
@@ -88,5 +90,8 @@ int main() {
         printf("Failed to write c610 msg\n");
       }
     }
+     
+
   }
+ 
 }
